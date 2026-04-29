@@ -789,9 +789,30 @@ async function generateAllContent() {
         onAgentStep(d) {
             const current = document.getElementById('gen-current');
             if (!current) return;
-            const icons = { model_a: '🤖', model_b: '🤖', critic: '🧑‍⚖️', critic_done: '✅' };
+            const icons = { model_a: '🤖', model_b: '🤖', critic_evaluating: '🧑‍⚖️', critic_done: '✅' };
             const icon = icons[d.step] || '⚙️';
+            const colors = { model_a: 'var(--accent-primary)', model_b: 'var(--accent-secondary)', critic_evaluating: 'var(--warning)', critic_done: 'var(--success)' };
+            const color = colors[d.step] || 'var(--text-secondary)';
+            
             current.innerHTML = `<span style="display:flex;align-items:center;gap:6px;">${icon} <span>${sanitizeText(d.message)}</span></span>`;
+            
+            // Populate Popup
+            const popup = document.getElementById('critic-popup');
+            const feed = document.getElementById('critic-feed');
+            if (popup && feed) {
+                popup.classList.remove('hidden');
+                // Force reflow
+                void popup.offsetWidth;
+                popup.style.opacity = '1';
+                popup.style.transform = 'translateY(0)';
+                
+                const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                feed.innerHTML += `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:${color};">
+                    <span style="opacity:0.5;font-size:10px;min-width:60px;">${time}</span>
+                    <span>${icon} ${sanitizeText(d.message)}</span>
+                </div>`;
+                feed.scrollTop = feed.scrollHeight;
+            }
         },
         onError(d) {
             const el = document.getElementById('gen-chapters');

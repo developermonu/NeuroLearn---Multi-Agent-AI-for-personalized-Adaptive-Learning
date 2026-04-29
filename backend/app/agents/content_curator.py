@@ -14,7 +14,8 @@ class ContentCuratorAgent(BaseAgent):
 
     async def generate_study_material(self, topic_name: str, difficulty: str = "medium",
                                        learning_style: str = "mixed",
-                                       context: str = "") -> Dict:
+                                       context: str = "",
+                                       progress_callback: Optional[callable] = None) -> Dict:
         """Generate study material using dual-model generation + critic."""
         content_type_map = {
             "visual": "diagram_description",
@@ -48,12 +49,23 @@ Requirements:
 - Appropriate for {difficulty} level students"""
 
         # Dual-model generation
+        if progress_callback:
+            await progress_callback("model_a", f"🤖 Model A drafting content for '{topic_name}'...")
         response_a = await self._call_llm(prompt, ModelTier.HIGH, system_prompt, 0.7, 3000)
+
+        if progress_callback:
+            await progress_callback("model_b", f"🤖 Model B drafting alternative for '{topic_name}'...")
         response_b = await self._call_llm(prompt, ModelTier.ALT, system_prompt, 0.7, 3000)
 
         # Critic selection
+        if progress_callback:
+            await progress_callback("critic_evaluating", f"🧑‍⚖️ Critic analyzing and comparing both drafts...")
         from app.agents.critic import critic_agent
         evaluation = await critic_agent.evaluate_content(response_a, response_b, topic_name, difficulty)
+
+        winner = evaluation.get("winner", "Model A")
+        if progress_callback:
+            await progress_callback("critic_done", f"✅ Critic selected {winner}'s draft as superior.")
 
         selected = evaluation["selected_response"]
         content = self._parse_json(selected) if isinstance(selected, str) else selected

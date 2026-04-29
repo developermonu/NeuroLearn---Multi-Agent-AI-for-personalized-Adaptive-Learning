@@ -62,16 +62,11 @@ async def _generate_topic_content_voted(topic_name, difficulty, learning_style, 
     """Generate content using ContentCuratorAgent (dual-model + CriticAgent voting)."""
     from app.agents.content_curator import content_curator_agent
 
-    if progress_callback:
-        await progress_callback("model_a", f"Model A generating content for {topic_name}...")
-
     result = await content_curator_agent.generate_study_material(
         topic_name=topic_name, difficulty=difficulty,
         learning_style=learning_style,
+        progress_callback=progress_callback
     )
-
-    if progress_callback:
-        await progress_callback("critic_done", f"Content selected for {topic_name}")
 
     title = result.get("title", f"Study Guide: {topic_name}")
     content_text = result.get("content", "")
