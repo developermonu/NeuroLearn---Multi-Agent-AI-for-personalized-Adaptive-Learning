@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress - NeuroLearn</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><div class="logo-icon">N</div><span>NeuroLearn</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" href="/dashboard.html"><span class="nav-icon">&#127968;</span> Dashboard</a>
+                <a class="nav-item" href="/study.html"><span class="nav-icon">&#128214;</span> Study</a>
+                <a class="nav-item" href="/quiz.html"><span class="nav-icon">&#10067;</span> Quiz</a>
+                <a class="nav-item" href="/qa.html"><span class="nav-icon">&#129302;</span> AI Tutor</a>
+                <a class="nav-item active" href="/progress.html"><span class="nav-icon">&#128200;</span> Progress</a>
+                <a class="nav-item" href="/certificate.html"><span class="nav-icon">&#127942;</span> Certificates</a>
+            </nav>
+            <div class="sidebar-footer"><div class="nav-item" onclick="logout()"><span class="nav-icon">&#128682;</span> Sign Out</div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Progress & Analytics</div>
+                    <div class="page-subtitle">Track your learning journey</div>
+                </div>
+            </div>
+            <div class="page-body">
+                <div id="summary-stats" class="mb-6"></div>
+
+                <h3 style="margin-bottom: var(--space-4);">Topic Mastery Overview</h3>
+                <div class="card mb-6" id="mastery-chart"></div>
+
+                <h3 style="margin-bottom: var(--space-4);">Detailed Breakdown</h3>
+                <div id="mastery-details"></div>
+            </div>
+        </main>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/progress.js"></script>
+</body>
+</html>

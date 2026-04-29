@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificates - NeuroLearn</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><div class="logo-icon">N</div><span>NeuroLearn</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" href="/dashboard.html"><span class="nav-icon">&#127968;</span> Dashboard</a>
+                <a class="nav-item" href="/study.html"><span class="nav-icon">&#128214;</span> Study</a>
+                <a class="nav-item" href="/quiz.html"><span class="nav-icon">&#10067;</span> Quiz</a>
+                <a class="nav-item" href="/qa.html"><span class="nav-icon">&#129302;</span> AI Tutor</a>
+                <a class="nav-item" href="/progress.html"><span class="nav-icon">&#128200;</span> Progress</a>
+                <a class="nav-item active" href="/certificate.html"><span class="nav-icon">&#127942;</span> Certificates</a>
+            </nav>
+            <div class="sidebar-footer"><div class="nav-item" onclick="logout()"><span class="nav-icon">&#128682;</span> Sign Out</div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Certificates</div>
+                    <div class="page-subtitle">Your earned credentials with W3C Verifiable Credential support</div>
+                </div>
+            </div>
+            <div class="page-body">
+                <div id="certificates-container">
+                    <div class="text-center" style="padding: var(--space-16);"><div class="spinner" style="margin: 0 auto;"></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            await loadCertificates();
+        });
+
+        async function loadCertificates() {
+            const container = document.getElementById('certificates-container');
+            try {
+                const certs = await api.getMyCertificates();
+                if (certs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">&#127942;</div>
+                            <div class="empty-state-title">No Certificates Yet</div>
+                            <div class="empty-state-text">Complete your exams to earn verifiable credentials.</div>
+                            <button class="btn btn-primary" onclick="window.location.href='/dashboard.html'">Back to Dashboard</button>
+                        </div>`;
+                    return;
+                }
+
+                let html = '<div class="card-grid">';
+                for (const cert of certs) {
+                    const gradeColors = { 'Distinction': 'success', 'Merit': 'info', 'Credit': 'primary', 'Pass': 'warning', 'Attempted': 'danger' };
+                    html += `
+                        <div class="card" style="text-align: center;">
+                            <div style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: var(--accent-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">&#127942;</div>
+                            <div class="card-title">${cert.exam_name}</div>
+                            <div class="text-muted mt-2">${cert.student_name}</div>
+                            <div class="mt-4">
+                                <span class="badge badge-${gradeColors[cert.grade] || 'primary'}" style="font-size: var(--text-base); padding: var(--space-2) var(--space-4);">${cert.grade}</span>
+                            </div>
+                            <div class="stat-value mt-4">${cert.final_score}%</div>
+                            <div class="text-sm text-muted">Final Score</div>
+                            <div class="mt-4" style="padding-top: var(--space-4); border-top: 1px solid var(--border-color);">
+                                <div class="text-sm text-muted">Verification Code</div>
+                                <code style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent-secondary); word-break: break-all;">${cert.verification_code}</code>
+                            </div>
+                            <div class="text-sm text-muted mt-2">Issued: ${new Date(cert.issued_at).toLocaleDateString()}</div>
+                        </div>`;
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Error loading certificates: ${error.message}</div></div>`;
+            }
+        }
+
+        async function generateCertificate(enrollmentId) {
+            try {
+                showLoading('Generating certificate...');
+                const result = await api.generateCertificate(enrollmentId);
+                hideLoading();
+                showToast('Certificate generated!', 'success');
+                await loadCertificates();
+            } catch (error) {
+                hideLoading();
+                showToast(error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

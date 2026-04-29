@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - NeuroLearn</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/quiz.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><div class="logo-icon">N</div><span>NeuroLearn</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" href="/dashboard.html"><span class="nav-icon">&#127968;</span> Dashboard</a>
+                <a class="nav-item" href="/study.html"><span class="nav-icon">&#128214;</span> Study</a>
+                <a class="nav-item" href="/quiz.html"><span class="nav-icon">&#10067;</span> Quiz</a>
+                <a class="nav-item active" href="/qa.html"><span class="nav-icon">&#129302;</span> AI Tutor</a>
+                <a class="nav-item" href="/progress.html"><span class="nav-icon">&#128200;</span> Progress</a>
+                <a class="nav-item" href="/certificate.html"><span class="nav-icon">&#127942;</span> Certificates</a>
+            </nav>
+            <div style="padding: var(--space-4); border-top: 1px solid var(--border-color);">
+                <button class="btn btn-secondary btn-block btn-sm" onclick="newConversation()">+ New Chat</button>
+            </div>
+            <div id="conversations-list" style="padding: var(--space-2); overflow-y: auto; max-height: 200px;"></div>
+            <div class="sidebar-footer"><div class="nav-item" onclick="logout()"><span class="nav-icon">&#128682;</span> Sign Out</div></div>
+        </aside>
+
+        <main class="main-content" style="display: flex; flex-direction: column;">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">AI Tutor</div>
+                    <div class="page-subtitle">Ask questions with cost-optimized model routing</div>
+                </div>
+            </div>
+            <div class="chat-container" style="flex: 1;">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">&#129302;</div>
+                        <div class="empty-state-title">AI Tutor</div>
+                        <div class="empty-state-text">Ask me anything about your course material. I'll route your question to the best AI model based on complexity.</div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <textarea class="chat-input" id="chat-input" placeholder="Type your question..." rows="1"></textarea>
+                    <button class="btn btn-primary" id="chat-send">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/qa.js"></script>
+</body>
+</html>

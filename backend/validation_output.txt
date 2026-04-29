@@ -1,0 +1,244 @@
+﻿
+########################################################################
+#  [1mNeuroLearn ΓÇö Empirical Validation of Novel Contributions[0m
+#  Run Date: 2026-04-09 19:51:28
+########################################################################
+
+========================================================================
+  [1m[96mCONTRIBUTION 1: IRT-Powered Psychometric Diagnostic Engine[0m
+========================================================================
+
+  [1m--- Exp 1.1: IRT Ability Estimation Accuracy ---[0m
+  Student Profile   | True Theta   | MAE     | RMSE    | Min Err   | Max Err  
+  ------------------+--------------+---------+---------+-----------+----------
+  Beginner          | -2.5         | 1.114   | 1.230   | 0.250     | 2.279    
+  Developing        | -1.0         | 0.629   | 0.896   | 0.009     | 3.000    
+  Intermediate      | 0.0          | 0.550   | 0.677   | 0.004     | 1.379    
+  Proficient        | 1.5          | 0.414   | 0.637   | 0.004     | 2.500    
+  Advanced          | 3.0          | 0.755   | 0.835   | 0.075     | 1.621    
+
+  Average MAE across profiles: [1m0.693[0m
+  [[92mPASS[0m] Mean Absolute Error < 1.0 logit (actual: 0.693)
+
+  [1m--- Exp 1.2: Ability Level Classification Accuracy ---[0m
+  Profile           | Exact Match %   | +/-1 Level %   
+  ------------------+-----------------+----------------
+  Beginner          | 54.0%           | 98.0%          
+  Developing        | 54.0%           | 100.0%         
+  Intermediate      | 54.0%           | 100.0%         
+  Proficient        | 72.0%           | 100.0%         
+  Advanced          | 96.0%           | 100.0%         
+  [1mOverall[0m   | [1m66.0%[0m   | [1m99.6%[0m  
+  [[92mPASS[0m] Adjacent-level accuracy >= 80% (actual: 99.6%)
+
+  [1m--- Exp 1.3: Conceptual Plateau Detection ---[0m
+  Metric                                           | Value    
+  -------------------------------------------------+----------
+  True Positives (plateau detected when present)   | 30       
+  True Negatives (no plateau when absent)          | 30       
+  False Positives                                  | 0        
+  False Negatives                                  | 0        
+  Precision                                        | 100.00%  
+  Recall                                           | 100.00%  
+  F1 Score                                         | 100.00%  
+  [[92mPASS[0m] Plateau Detection F1 >= 0.70 (actual: 100.00%)
+
+  [1m--- Exp 1.4: SM-2 Spaced Repetition Scheduling ---[0m
+  Case     | Score    | Prev Int.   | Reps   | New Int.   | Passed   | EF     | Status  
+  ---------+----------+-------------+--------+------------+----------+--------+---------
+  Case 1   | 100.0%   | 0d          | 0      | 1d         | Y        | 2.60   | PASS    
+  Case 2   | 100.0%   | 1d          | 1      | 6d         | Y        | 2.60   | PASS    
+  Case 3   | 100.0%   | 6d          | 2      | 15d        | Y        | 2.60   | PASS    
+  Case 4   | 20.0%    | 6d          | 2      | 1d         | N        | 2.50   | PASS    
+  Case 5   | 60.0%    | 0d          | 0      | 1d         | Y        | 2.36   | PASS    
+  Case 6   | 0.0%     | 10d         | 5      | 1d         | N        | 2.30   | PASS    
+  [[92mPASS[0m] All SM-2 scheduling cases match expected behavior
+
+========================================================================
+  [1m[96mCONTRIBUTION 2: Generate-Generate-Critique (GGC) Pipeline[0m
+========================================================================
+
+  [1m--- Exp 2.1: GGC vs Single-Model Content Quality Comparison ---[0m
+  Topic                       | Single (avg)   | GGC (avg)      | Delta Quality   
+  ----------------------------+----------------+----------------+-----------------
+  AWS EC2 Auto Scaling        | 6.88           | 8.09           | +17.7%          
+  VPC Networking              | 7.26           | 7.28           | +0.2%           
+  IAM Policies                | 6.57           | 8.74           | +32.9%          
+  S3 Storage Classes          | 7.26           | 7.56           | +4.2%           
+  Lambda Functions            | 7.16           | 8.49           | +18.5%          
+  RDS vs DynamoDB             | 6.99           | 8.35           | +19.5%          
+  CloudFormation Templates    | 6.29           | 7.77           | +23.5%          
+  Route 53 DNS                | 6.27           | 7.83           | +24.8%          
+  ELB Load Balancing          | 6.96           | 7.63           | +9.7%           
+  AWS Security Best Practic   | 6.82           | 7.82           | +14.7%          
+  [1mAVERAGE[0m             | [1m6.85[0m   | [1m7.96[0m   | [1m+16.2%[0m  
+  [[92mPASS[0m] GGC quality improvement > 0% (actual: +16.2%)
+
+  [1m--- Exp 2.2: GGC Cost-Quality Trade-off Analysis ---[0m
+  Method               | Cost/query (m$)   | Quality   | Quality/$ (x1000)  
+  ---------------------+-------------------+-----------+--------------------
+  Single-Model         | $9.250            | 6.85/10   | 740                
+  GGC Pipeline         | $13.450           | 7.96/10   | 592                
+  Delta (GGC-Single)   | +45.4%            | +16.2%    | --                 
+
+  [1m--- Exp 2.3: Critic Selection Consistency ---[0m
+  Metric                  | Value   
+  ------------------------+---------
+  Total Evaluations       | 20      
+  Selection Consistency   | 100.0%  
+  Model A Selected        | 100.0%  
+  Model B Selected        | 0.0%    
+  [[92mPASS[0m] Critic consistency >= 80% (actual: 100.0%)
+
+  [1m--- Exp 2.4: Hallucination Reduction ΓÇö Structural Compliance ---[0m
+  Method         | Schema Compliance   | Schema Violations (proxy for hallucination)  
+  ---------------+---------------------+----------------------------------------------
+  Single-Model   | 100%                | 0%                                           
+  GGC Pipeline   | 100%                | 0%                                           
+  [[92mPASS[0m] GGC compliance >= Single-model (GGC=100% vs Single=100%)
+
+========================================================================
+  [1m[96mCONTRIBUTION 3: Cost-Optimised Semantic Q&A Router[0m
+========================================================================
+
+  [1m--- Exp 3.1: Question Complexity Classification ---[0m
+  Question (truncated)                                    | Expected   | Predicted   | Score   | Words   | Match  
+  --------------------------------------------------------+------------+-------------+---------+---------+--------
+  What does EC2 stand for?                                | low        | low         | 20      | 5w      | Y      
+  Define a VPC                                            | low        | low         | 20      | 3w      | Y      
+  What is S3?                                             | low        | low         | 20      | 3w      | Y      
+  List IAM policy types                                   | low        | low         | 20      | 4w      | Y      
+  What is an AMI?                                         | low        | low         | 20      | 4w      | Y      
+  Compare RDS and DynamoDB for a high traffic e-comm...   | medium     | medium      | 45      | 11w     | Y      
+  How does Auto Scaling interact with Elastic Load B...   | medium     | medium      | 45      | 15w     | Y      
+  Explain the key differences between VPC peering co...   | medium     | medium      | 45      | 14w     | Y      
+  What are the performance and cost trade-offs betwe...   | medium     | medium      | 45      | 16w     | Y      
+  How do security groups differ from network access ...   | medium     | medium      | 45      | 17w     | Y      
+  Design a fault-tolerant multi-region active-active...   | high       | high        | 70      | 27w     | Y      
+  A company is migrating a monolithic Java applicati...   | high       | high        | 70      | 33w     | Y      
+  Analyze the cost-performance trade-offs of using A...   | high       | high        | 70      | 31w     | Y      
+  Design a HIPAA-compliant healthcare data lake arch...   | high       | high        | 70      | 32w     | Y      
+  Propose a comprehensive disaster recovery strategy...   | high       | high        | 70      | 34w     | Y      
+  [[92mPASS[0m] Classification accuracy >= 70% (actual: 100.0%)
+
+  [1m--- Exp 3.2: Cost Reduction ΓÇö Tiered Routing vs Always-High ---[0m
+  Strategy          | Cost/100 queries (m$)   | % of Baseline   | Savings  
+  ------------------+-------------------------+-----------------+----------
+  Always GPT-4o     | $1000.00                | 100%            | ΓÇö        
+  Semantic Router   | $359.00                 | 35.9%           | -64.1%   
+
+  Tier Distribution: Low=40% | Medium=35% | High=25%
+  [[92mPASS[0m] Cost reduction >= 40% (actual: 64.1%)
+
+  [1m--- Exp 3.3: Context Maintenance Across Conversations ---[0m
+  Context Maintenance Check   | Result  
+  ----------------------------+---------
+  Response is non-empty       | Y       
+  Model tier assigned         | Y       
+  Complexity score present    | Y       
+  Cost tracked                | Y       
+  Token count tracked         | Y       
+  [[92mPASS[0m] All context checks pass (5/5)
+
+  [1m--- Exp 3.4: RAG Retrieval Integration ---[0m
+  Check                              | Result  
+  -----------------------------------+---------
+  RAG function callable              | Y       
+  Returns string type                | Y       
+  Graceful fallback on no ChromaDB   | Y       
+  [[92mPASS[0m] RAG integration available with graceful degradation
+
+========================================================================
+  [1m[96mCONTRIBUTION 4: W3C Verifiable Credential Certificate Issuance[0m
+========================================================================
+
+  [1m--- Exp 4.1: W3C Verifiable Credential Schema Compliance ---[0m
+  W3C VC Compliance Check                   | Result  
+  ------------------------------------------+---------
+  @context includes W3C credentials/v1      | Y       
+  type includes 'VerifiableCredential'      | Y       
+  issuer field is a valid DID               | Y       
+  issuanceDate field present & ISO 8601     | Y       
+  credentialSubject.id is a valid DID       | Y       
+  credentialSubject contains student name   | Y       
+  credentialSubject contains exam name      | Y       
+  credentialSubject contains score          | Y       
+  proof section present                     | Y       
+  proof.type is a recognized algorithm      | Y       
+  proof.verificationMethod present          | Y       
+  proof.proofPurpose = 'assertionMethod'    | Y       
+  proof.proofValue is non-empty hash        | Y       
+  verification code is 32 chars hex         | Y       
+  [[92mPASS[0m] Full W3C VC compliance (14/14)
+
+  [1m--- Exp 4.2: Verification Code Uniqueness & Collision Resistance ---[0m
+  Metric            | Value                        
+  ------------------+------------------------------
+  Codes Generated   | 1000                         
+  Unique Codes      | 1000                         
+  Collisions        | 0                            
+  Collision Rate    | 0.0000%                      
+  Code Length       | 32 hex characters (128-bit)  
+  Hash Algorithm    | SHA-256 (truncated)          
+  [[92mPASS[0m] Zero collisions in 1000 codes
+
+  [1m--- Exp 4.3: Grade Calculation Accuracy ---[0m
+  Score   | Expected Grade   | Actual Grade   | Match  
+  --------+------------------+----------------+--------
+  95.0%   | Distinction      | Distinction    | Y      
+  90.0%   | Distinction      | Distinction    | Y      
+  85.0%   | Merit            | Merit          | Y      
+  80.0%   | Merit            | Merit          | Y      
+  75.0%   | Credit           | Credit         | Y      
+  70.0%   | Credit           | Credit         | Y      
+  65.0%   | Pass             | Pass           | Y      
+  60.0%   | Pass             | Pass           | Y      
+  55.0%   | Attempted        | Attempted      | Y      
+  40.0%   | Attempted        | Attempted      | Y      
+  0.0%    | Attempted        | Attempted      | Y      
+  [[92mPASS[0m] All grade boundaries match specification
+
+  [1m--- Exp 4.4: VC Serialization & Verification Round-trip ---[0m
+  Round-trip Check                 | Result  
+  ---------------------------------+---------
+  JSON serialization succeeds      | Y       
+  JSON deserialization succeeds    | Y       
+  context preserved                | Y       
+  type preserved                   | Y       
+  issuer preserved                 | Y       
+  credentialSubject preserved      | Y       
+  proof preserved                  | Y       
+  Full equality after round-trip   | Y       
+  [[92mPASS[0m] All round-trip checks pass (8/8)
+
+========================================================================
+  [1m[96mCONSOLIDATED EMPIRICAL VALIDATION SUMMARY[0m
+========================================================================
+  Contribution                            | Tests        | Passed       | Failed      | Status                 
+  ----------------------------------------+--------------+--------------+-------------+------------------------
+  1. IRT Psychometric Diagnostic Engine   | 4            | 4            | 0           | [92mALL PASS[0m      
+  2. GGC Dual-Model Content Pipeline      | 4            | 4            | 0           | [92mALL PASS[0m      
+  3. Cost-Optimised Semantic Q&A Router   | 4            | 4            | 0           | [92mALL PASS[0m      
+  4. W3C Verifiable Credential Issuance   | 4            | 4            | 0           | [92mALL PASS[0m      
+  [1mTOTAL[0m                           | [1m16[0m   | [1m16[0m   | [1m0[0m   | [1m[92mALL PASS[0m  
+
+  [1m--- Key Performance Metrics ---[0m
+  Metric                                | Measured Value   | Threshold        
+  --------------------------------------+------------------+------------------
+  IRT ╬╕-Estimation MAE                  | 0.6925 logits    | < 1.0            
+  Ability Classification (+/-1 level)   | 99.6%            | >= 80%           
+  Conceptual Plateau F1                 | 100.00%          | >= 0.70          
+  GGC Quality Improvement               | +16.2%           | > 0%             
+  Critic Consistency                    | 100.0%           | >= 80%           
+  GGC Schema Compliance                 | 100%             | >= Single-model  
+  Complexity Classification Accuracy    | 100.0%           | >= 70%           
+  Cost Reduction (vs always-GPT-4o)     | 64.1%            | >= 40%           
+  W3C VC Schema Compliance              | 100%             | 100%             
+  Verification Code Collision Rate      | 0.0000%          | 0%               
+
+  Results saved to: C:\Users\Lenovo\OneDrive\Desktop\CapstoneSEM8\Project\backend\validation_results.json
+
+########################################################################
+#  Validation Complete
+########################################################################
+

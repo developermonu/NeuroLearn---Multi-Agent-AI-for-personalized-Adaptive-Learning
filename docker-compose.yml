@@ -1,0 +1,201 @@
+version: "3.8"
+
+services:
+  # ===========================================
+  # MySQL Database
+  # ===========================================
+  mysql:
+    image: mysql:8.0
+    container_name: neurolearn-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-neurolearn_pass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-neurolearn}
+      MYSQL_USER: ${MYSQL_USER:-neurolearn}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-neurolearn_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD:-neurolearn_pass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # Redis (Caching & Celery Broker)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: neurolearn-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # ChromaDB (Vector Database)
+  # ===========================================
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: neurolearn-chromadb
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # Backend (FastAPI)
+  # ===========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: neurolearn-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # Celery Worker (Background Tasks)
+  # ===========================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: neurolearn-celery-worker
+    restart: unless-stopped
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # Celery Beat (Periodic Task Scheduler)
+  # ===========================================
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: neurolearn-celery-beat
+    restart: unless-stopped
+    command: celery -A app.celery_app beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - neurolearn-network
+
+  # ===========================================
+  # Nginx (Reverse Proxy & Static Files)
+  # ===========================================
+  nginx:
+    image: nginx:alpine
+    container_name: neurolearn-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - neurolearn-network
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  chroma_data:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  neurolearn-network:
+    driver: bridge
+    name: neurolearn-network

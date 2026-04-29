@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study - NeuroLearn</title>
+    <meta name="description" content="AI-powered personalized study plan with chapter-by-chapter content generation.">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><div class="logo-icon">N</div><span>NeuroLearn</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" href="/dashboard.html"><span class="nav-icon">&#127968;</span> Dashboard</a>
+                <a class="nav-item active" href="/study.html"><span class="nav-icon">&#128214;</span> Study</a>
+                <a class="nav-item" href="/quiz.html"><span class="nav-icon">&#10067;</span> Quiz</a>
+                <a class="nav-item" href="/qa.html"><span class="nav-icon">&#129302;</span> AI Tutor</a>
+                <a class="nav-item" href="/progress.html"><span class="nav-icon">&#128200;</span> Progress</a>
+                <a class="nav-item" href="/certificate.html"><span class="nav-icon">&#127942;</span> Certificates</a>
+                <a class="nav-item" href="/llm-test.html"><span class="nav-icon">⚡</span> LLM Lab</a>
+            </nav>
+            <div class="sidebar-footer"><div class="nav-item" onclick="logout()"><span class="nav-icon">&#128682;</span> Sign Out</div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Study Plan</div>
+                    <div class="page-subtitle">Your personalized learning journey — sequential mastery</div>
+                </div>
+                <div class="flex gap-3">
+                    <button class="btn btn-primary" onclick="buildLearningPath()">🧠 Build Learning Path</button>
+                    <button class="btn btn-secondary" onclick="generateAllContent()">📚 Generate All Content</button>
+                </div>
+            </div>
+            <div class="page-body">
+                <div id="progress-stats" class="mb-6"></div>
+
+                <div id="path-info" class="card mb-6 hidden"></div>
+
+                <!-- Content generation progress (populated by SSE) -->
+                <div id="gen-progress" class="hidden mb-6"></div>
+
+                <h3 style="margin-bottom: var(--space-4);">Today's Tasks</h3>
+                <div id="today-tasks" class="mb-6"></div>
+
+                <div id="schedule-view" class="card hidden mb-6"></div>
+
+                <h3 style="margin-bottom: var(--space-4);">📋 Topics &mdash; Sequential Unlock</h3>
+                <p class="text-sm text-muted" style="margin-bottom: var(--space-4);">Generate content → Read → Pass Quiz → Unlock next topic</p>
+                <div id="topics-list"></div>
+            </div>
+        </main>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/study.js"></script>
+</body>
+</html>

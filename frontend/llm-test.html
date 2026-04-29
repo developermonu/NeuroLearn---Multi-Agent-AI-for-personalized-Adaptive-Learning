@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroLearn — LLM Test Dashboard</title>
+    <meta name="description" content="Test and benchmark all Ollama Cloud models powering the NeuroLearn platform.">
+    <link rel="stylesheet" href="css/variables.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-primary); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+        /* ---- Header ---- */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--space-4) var(--space-8); border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary); position: sticky; top: 0; z-index: var(--z-dropdown);
+            backdrop-filter: blur(12px);
+        }
+        .top-bar .logo { display: flex; align-items: center; gap: var(--space-3); }
+        .top-bar .logo-text { font-size: var(--text-xl); font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .top-bar .badge { font-size: var(--text-xs); padding: 2px 8px; border-radius: var(--radius-full);
+            background: var(--accent-primary-light); color: var(--accent-primary); font-weight: 600; }
+        .top-bar nav a { color: var(--text-secondary); text-decoration: none; font-size: var(--text-sm); margin-left: var(--space-5); transition: color var(--transition-fast); }
+        .top-bar nav a:hover { color: var(--accent-primary); }
+
+        /* ---- Main Layout ---- */
+        .page-wrapper { max-width: var(--max-content-width); margin: 0 auto; padding: var(--space-8); }
+        .page-title { font-size: var(--text-3xl); font-weight: 800; margin-bottom: var(--space-2); }
+        .page-subtitle { color: var(--text-secondary); font-size: var(--text-lg); margin-bottom: var(--space-8); }
+
+        /* ---- Status Banner ---- */
+        .status-banner {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+        .status-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            padding: var(--space-5); display: flex; align-items: center; gap: var(--space-4);
+            transition: border-color var(--transition-fast);
+        }
+        .status-card:hover { border-color: var(--accent-primary); }
+        .status-icon { width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center;
+            justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .status-icon.green  { background: var(--success-light); }
+        .status-icon.blue   { background: var(--info-light); }
+        .status-icon.yellow { background: var(--warning-light); }
+        .status-icon.purple { background: var(--accent-primary-light); }
+        .status-label { font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .status-value { font-size: var(--text-lg); font-weight: 700; margin-top: 2px; }
+
+        /* ---- Controls Card ---- */
+        .controls-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-xl);
+            padding: var(--space-6); margin-bottom: var(--space-8);
+        }
+        .controls-card h2 { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-5);
+            display: flex; align-items: center; gap: var(--space-3); }
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+        .controls-full { grid-column: 1 / -1; }
+        label.field-label { display: block; font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);
+            margin-bottom: var(--space-2); }
+        textarea, select, input[type="number"], input[type="range"] {
+            width: 100%; padding: var(--space-3); background: var(--bg-input); border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); color: var(--text-primary); font-family: var(--font-primary);
+            font-size: var(--text-sm); transition: border-color var(--transition-fast);
+        }
+        textarea:focus, select:focus, input:focus { outline: none; border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-primary-light); }
+        textarea { min-height: 80px; resize: vertical; font-family: var(--font-mono); }
+
+        /* Buttons */
+        .btn-row { display: flex; gap: var(--space-3); margin-top: var(--space-5); }
+        .btn {
+            padding: var(--space-3) var(--space-6); border-radius: var(--radius-md); font-weight: 600;
+            font-size: var(--text-sm); cursor: pointer; border: none; transition: all var(--transition-fast);
+            display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-primary);
+        }
+        .btn-primary { background: var(--accent-primary); color: #fff; }
+        .btn-primary:hover { background: var(--accent-primary-hover); box-shadow: var(--shadow-glow); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { border-color: var(--accent-primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ---- Spinner ---- */
+        .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.25);
+            border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---- Results Grid ---- */
+        .results-title { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-5);
+            display: flex; align-items: center; gap: var(--space-3); }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-5); }
+        .result-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-xl);
+            overflow: hidden; transition: all var(--transition-base);
+        }
+        .result-card:hover { border-color: var(--accent-primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .result-card.success { border-top: 3px solid var(--success); }
+        .result-card.error { border-top: 3px solid var(--danger); }
+        .result-card.mock { border-top: 3px solid var(--warning); }
+        .result-card.loading { border-top: 3px solid var(--accent-primary); }
+
+        .result-header {
+            padding: var(--space-4) var(--space-5); display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .model-name { font-weight: 700; font-size: var(--text-base); display: flex; align-items: center; gap: var(--space-2); }
+        .tier-badge {
+            font-size: var(--text-xs); padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600;
+        }
+        .tier-badge.high { background: rgba(239,68,68,.15); color: #f87171; }
+        .tier-badge.medium { background: rgba(245,158,11,.15); color: #fbbf24; }
+        .tier-badge.low { background: rgba(34,197,94,.15); color: #4ade80; }
+        .tier-badge.alt { background: rgba(139,92,246,.15); color: #a78bfa; }
+
+        .status-pill { font-size: var(--text-xs); padding: 3px 10px; border-radius: var(--radius-full); font-weight: 600; }
+        .status-pill.success { background: var(--success-light); color: var(--success); }
+        .status-pill.error { background: var(--danger-light); color: var(--danger); }
+        .status-pill.mock { background: var(--warning-light); color: var(--warning); }
+        .status-pill.loading { background: var(--accent-primary-light); color: var(--accent-primary); }
+
+        .result-metrics {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-bottom: 1px solid var(--border-color);
+        }
+        .metric-cell {
+            padding: var(--space-3) var(--space-4); text-align: center; border-right: 1px solid var(--border-color);
+        }
+        .metric-cell:last-child { border-right: none; }
+        .metric-cell .metric-val { font-size: var(--text-base); font-weight: 700; font-family: var(--font-mono); }
+        .metric-cell .metric-lbl { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+        .result-response {
+            padding: var(--space-4) var(--space-5); font-size: var(--text-sm); line-height: 1.65;
+            color: var(--text-secondary); max-height: 200px; overflow-y: auto;
+        }
+        .result-response pre { white-space: pre-wrap; word-break: break-word; font-family: var(--font-mono);
+            font-size: var(--text-xs); background: var(--bg-input); padding: var(--space-3); border-radius: var(--radius-md); }
+        .result-error { color: var(--danger); font-family: var(--font-mono); font-size: var(--text-xs); }
+
+        /* Summary bar */
+        .summary-bar {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-6); margin-bottom: var(--space-6);
+            display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
+        }
+        .summary-item { display: flex; align-items: baseline; gap: var(--space-2); }
+        .summary-label { font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+        .summary-value { font-weight: 700; font-family: var(--font-mono); }
+        .summary-value.green { color: var(--success); }
+        .summary-value.red { color: var(--danger); }
+        .summary-value.yellow { color: var(--warning); }
+
+        /* Loading skeleton */
+        .skeleton-card { animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+        .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls-grid { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
+            .status-banner { grid-template-columns: 1fr 1fr; }
+            .page-wrapper { padding: var(--space-4); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======== Top Bar ======== -->
+<header class="top-bar">
+    <div class="logo">
+        <span class="logo-text">NeuroLearn</span>
+        <span class="badge">LLM Lab</span>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="/api/docs" target="_blank">API Docs</a>
+    </nav>
+</header>
+
+<!-- ======== Page Content ======== -->
+<main class="page-wrapper">
+
+    <h1 class="page-title">⚡ LLM Model Test Dashboard</h1>
+    <p class="page-subtitle">Benchmark and test all Ollama Cloud models powering the NeuroLearn multi-agent pipeline.</p>
+
+    <!-- Status Banner -->
+    <section class="status-banner" id="status-banner">
+        <div class="status-card">
+            <div class="status-icon blue">🌐</div>
+            <div><div class="status-label">Endpoint</div><div class="status-value" id="stat-endpoint">—</div></div>
+        </div>
+        <div class="status-card">
+            <div class="status-icon green">🔑</div>
+            <div><div class="status-label">API Key</div><div class="status-value" id="stat-apikey">—</div></div>
+        </div>
+        <div class="status-card">
+            <div class="status-icon purple">🤖</div>
+            <div><div class="status-label">Models</div><div class="status-value" id="stat-models">—</div></div>
+        </div>
+        <div class="status-card">
+            <div class="status-icon yellow">📡</div>
+            <div><div class="status-label">Connection</div><div class="status-value" id="stat-conn">Checking…</div></div>
+        </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls-card">
+        <h2>🧪 Configure Test</h2>
+        <div class="controls-grid">
+            <div class="controls-full">
+                <label class="field-label" for="test-prompt">Prompt</label>
+                <textarea id="test-prompt" placeholder="Enter a prompt to send to all models…">Explain what machine learning is in 2-3 sentences.</textarea>
+            </div>
+            <div>
+                <label class="field-label" for="test-system">System Prompt</label>
+                <textarea id="test-system" style="min-height:50px;">You are a helpful educational assistant. Be concise.</textarea>
+            </div>
+            <div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+                    <div>
+                        <label class="field-label" for="test-temp">Temperature</label>
+                        <input type="number" id="test-temp" value="0.7" min="0" max="2" step="0.1">
+                    </div>
+                    <div>
+                        <label class="field-label" for="test-tokens">Max Tokens</label>
+                        <input type="number" id="test-tokens" value="500" min="50" max="4000" step="50">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-test-all" onclick="runTestAll()">
+                🚀 Test All Models
+            </button>
+            <button class="btn btn-secondary" id="btn-check-health" onclick="checkHealth()">
+                📡 Check Connection
+            </button>
+        </div>
+    </section>
+
+    <!-- Summary (hidden until results) -->
+    <div class="summary-bar hidden" id="summary-bar">
+        <div class="summary-item"><span class="summary-label">Passed</span><span class="summary-value green" id="sum-pass">—</span></div>
+        <div class="summary-item"><span class="summary-label">Failed</span><span class="summary-value red" id="sum-fail">—</span></div>
+        <div class="summary-item"><span class="summary-label">Mock</span><span class="summary-value yellow" id="sum-mock">—</span></div>
+        <div class="summary-item"><span class="summary-label">Avg Latency</span><span class="summary-value" id="sum-latency">—</span></div>
+        <div class="summary-item"><span class="summary-label">Total Cost</span><span class="summary-value" id="sum-cost">—</span></div>
+        <div class="summary-item"><span class="summary-label">Fastest</span><span class="summary-value green" id="sum-fastest">—</span></div>
+    </div>
+
+    <!-- Results Grid -->
+    <section id="results-section" class="hidden">
+        <h2 class="results-title">📊 Results</h2>
+        <div class="results-grid" id="results-grid"></div>
+    </section>
+
+</main>
+
+<script>
+const API = '/api/v1/llm-test';
+const TIER_MAP = {};
+
+// ---- Helpers ----
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function setStatus(id, val, cls) {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    if (cls) { el.className = 'status-value ' + cls; }
+}
+
+function getTierFor(model) {
+    return TIER_MAP[model] || 'medium';
+}
+
+// ---- On Load: Get config ----
+(async () => {
+    try {
+        const res = await fetch(`${API}/config`);
+        const cfg = await res.json();
+
+        setStatus('stat-endpoint', new URL(cfg.ollama_url).host);
+        setStatus('stat-apikey', cfg.api_key_configured ? '✅ Set' : '⚠️ Not set');
+        setStatus('stat-models', cfg.all_models.length + ' models');
+
+        // Map model → tier
+        Object.entries(cfg.models).forEach(([tier, model]) => {
+            TIER_MAP[model] = tier.toLowerCase();
+        });
+
+        checkHealth();
+    } catch (e) {
+        setStatus('stat-conn', '❌ API offline', 'red');
+    }
+})();
+
+// ---- Health Check ----
+async function checkHealth() {
+    setStatus('stat-conn', 'Checking…');
+    try {
+        const res = await fetch(`${API}/health`);
+        const data = await res.json();
+        if (data.status === 'connected') {
+            setStatus('stat-conn', '✅ Connected');
+            const models = data.available_models || [];
+            if (models.length > 0) {
+                setStatus('stat-models', models.length + ' available');
+            }
+        } else {
+            setStatus('stat-conn', '⚠️ ' + (data.detail || 'Error'));
+        }
+    } catch (e) {
+        setStatus('stat-conn', '❌ Failed');
+    }
+}
+
+// ---- Test All Models ----
+async function runTestAll() {
+    const btnEl = $('#btn-test-all');
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner"></span> Testing…';
+
+    const grid = $('#results-grid');
+    const section = $('#results-section');
+    const summaryBar = $('#summary-bar');
+    section.classList.remove('hidden');
+    summaryBar.classList.add('hidden');
+
+    // Show loading skeletons
+    const models = Object.values(TIER_MAP);
+    grid.innerHTML = Object.entries(TIER_MAP).map(([model, tier]) =>
+        buildCardHTML(model, tier, 'loading', null)
+    ).join('');
+
+    try {
+        const payload = {
+            prompt: $('#test-prompt').value,
+            system_prompt: $('#test-system').value,
+            temperature: parseFloat($('#test-temp').value),
+            max_tokens: parseInt($('#test-tokens').value),
+        };
+
+        const res = await fetch(`${API}/test-all`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        // Render results
+        grid.innerHTML = data.results.map(r =>
+            buildCardHTML(r.model, getTierFor(r.model), r.status, r)
+        ).join('');
+
+        // Summary
+        summaryBar.classList.remove('hidden');
+        const s = data.summary;
+        $('#sum-pass').textContent = s.success;
+        $('#sum-fail').textContent = s.errors;
+        $('#sum-mock').textContent = s.mock;
+        $('#sum-latency').textContent = s.avg_latency_ms > 0 ? s.avg_latency_ms + ' ms' : '—';
+        $('#sum-cost').textContent = s.total_estimated_cost_usd > 0 ? '$' + s.total_estimated_cost_usd.toFixed(6) : '$0';
+        $('#sum-fastest').textContent = s.fastest_model || '—';
+
+    } catch (e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;color:var(--danger);padding:var(--space-6);">
+            ❌ Request failed: ${e.message}</div>`;
+    } finally {
+        btnEl.disabled = false;
+        btnEl.innerHTML = '🚀 Test All Models';
+    }
+}
+
+// ---- Build Card HTML ----
+function buildCardHTML(model, tier, status, data) {
+    const tierLabel = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW', alt: 'ALT' }[tier] || tier.toUpperCase();
+
+    if (status === 'loading') {
+        return `<div class="result-card loading skeleton-card">
+            <div class="result-header">
+                <div class="model-name">${model} <span class="tier-badge ${tier}">${tierLabel}</span></div>
+                <span class="status-pill loading"><span class="spinner" style="width:12px;height:12px;border-width:2px;"></span> Testing</span>
+            </div>
+            <div class="result-metrics">
+                <div class="metric-cell"><div class="metric-val">—</div><div class="metric-lbl">Latency</div></div>
+                <div class="metric-cell"><div class="metric-val">—</div><div class="metric-lbl">Tokens</div></div>
+                <div class="metric-cell"><div class="metric-val">—</div><div class="metric-lbl">Cost</div></div>
+            </div>
+            <div class="result-response" style="color:var(--text-tertiary);">Waiting for response…</div>
+        </div>`;
+    }
+
+    const latencyStr = data.latency_ms > 0 ? data.latency_ms.toFixed(0) + 'ms' : '—';
+    const tokensStr = data.total_tokens > 0 ? data.total_tokens : '—';
+    const costStr = data.estimated_cost_usd > 0 ? '$' + data.estimated_cost_usd.toFixed(6) : '$0';
+
+    let responseHTML = '';
+    if (status === 'success') {
+        responseHTML = `<div class="result-response"><pre>${escapeHTML(data.response)}</pre></div>`;
+    } else if (status === 'error') {
+        responseHTML = `<div class="result-response"><div class="result-error">⚠️ ${escapeHTML(data.error)}</div></div>`;
+    } else {
+        responseHTML = `<div class="result-response"><pre>${escapeHTML(data.response || 'Mock response')}</pre></div>`;
+    }
+
+    return `<div class="result-card ${status}">
+        <div class="result-header">
+            <div class="model-name">${model} <span class="tier-badge ${tier}">${tierLabel}</span></div>
+            <span class="status-pill ${status}">${status === 'success' ? '✅ Success' : status === 'error' ? '❌ Error' : '⚠️ Mock'}</span>
+        </div>
+        <div class="result-metrics">
+            <div class="metric-cell"><div class="metric-val">${latencyStr}</div><div class="metric-lbl">Latency</div></div>
+            <div class="metric-cell"><div class="metric-val">${tokensStr}</div><div class="metric-lbl">Tokens</div></div>
+            <div class="metric-cell"><div class="metric-val">${costStr}</div><div class="metric-lbl">Est. Cost</div></div>
+        </div>
+        ${responseHTML}
+    </div>`;
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+</body>
+</html>

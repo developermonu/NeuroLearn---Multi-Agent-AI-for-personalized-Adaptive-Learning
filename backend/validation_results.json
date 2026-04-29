@@ -1,0 +1,130 @@
+{
+  "contribution_1_irt_engine": {
+    "tests": [
+      {
+        "name": "IRT Theta-Estimation Accuracy",
+        "avg_mae": 0.6925,
+        "pass": true
+      },
+      {
+        "name": "Classification Accuracy",
+        "exact": 66.0,
+        "adjacent": 99.6,
+        "pass": true
+      },
+      {
+        "name": "Plateau Detection F1",
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "pass": true
+      },
+      {
+        "name": "SM-2 Scheduling Correctness",
+        "pass": true
+      }
+    ],
+    "summary": {
+      "total_tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "contribution_2_ggc_pipeline": {
+    "tests": [
+      {
+        "name": "GGC Quality Improvement",
+        "single_avg": 6.659,
+        "ggc_avg": 7.853,
+        "improvement_pct": 17.92,
+        "pass": true
+      },
+      {
+        "name": "GGC Cost-Quality Tradeoff",
+        "cost_overhead_pct": 12.21,
+        "quality_improvement_pct": 17.92,
+        "pass": true
+      },
+      {
+        "name": "Critic Consistency",
+        "consistency_pct": 100.0,
+        "pass": true
+      },
+      {
+        "name": "Structural Compliance",
+        "single_pct": 0.0,
+        "ggc_pct": 100.0,
+        "pass": true
+      }
+    ],
+    "summary": {
+      "total_tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "contribution_3_qa_router": {
+    "tests": [
+      {
+        "name": "Complexity Classification",
+        "accuracy_pct": 100.0,
+        "pass": true
+      },
+      {
+        "name": "Cost Reduction",
+        "always_high_cost_mdollar": 1200.0,
+        "routed_cost_mdollar": 350.0,
+        "reduction_pct": 70.83,
+        "pass": true
+      },
+      {
+        "name": "Context Maintenance",
+        "checks_passed": 5,
+        "total_checks": 5,
+        "pass": true
+      },
+      {
+        "name": "RAG Integration",
+        "pass": true
+      }
+    ],
+    "summary": {
+      "total_tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "contribution_4_w3c_vc": {
+    "tests": [
+      {
+        "name": "W3C VC Schema Compliance",
+        "checks_passed": 14,
+        "total_checks": 14,
+        "compliance_pct": 100.0,
+        "pass": true
+      },
+      {
+        "name": "Verification Code Uniqueness",
+        "codes_generated": 1000,
+        "unique": 1000,
+        "collision_rate_pct": 0.0,
+        "pass": true
+      },
+      {
+        "name": "Grade Calculation",
+        "pass": true
+      },
+      {
+        "name": "VC Round-trip Integrity",
+        "checks_passed": 8,
+        "total_checks": 8,
+        "pass": true
+      }
+    ],
+    "summary": {
+      "total_tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  }
+}

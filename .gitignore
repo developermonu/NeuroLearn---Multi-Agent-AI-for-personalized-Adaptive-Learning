@@ -1,0 +1,13 @@
+/.env
+/.env.example
+/.vscode
+/Markdown to PDF (1).pdf
+/test_api.py
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+*.log
+backend/certificates/*.pdf
+backend/validation_output.txt
